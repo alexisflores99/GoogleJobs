@@ -8,7 +8,7 @@ DATABASE = {
     "DB_HOST" : 'localhost',
     "DB_SERVICE" : 'googlejobs',
     "DB_USER" : 'postgres',
-    "DB_PASSWORD" : 'sasa'
+    "DB_PASSWORD" : 'admin'
 }
 
 #SITIO-COMPUTRABAJO

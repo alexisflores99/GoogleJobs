@@ -25,6 +25,7 @@ from dao import webscraping_dao
 
 # Traemos a los properties
 from properties.configuration import *
+from utils import util
 
 
 # Inicio del driver
@@ -110,12 +111,12 @@ class WebScrapingService():
 
         # obtengo todos los titulos de los trabajos
         # Se le da click al titulo para que muestre el detalle
-        titulos = driver.find_elements_by_class_name("BjJfJf")  
+        ofertas = driver.find_elements_by_class_name("BjJfJf")  
 
-        for titulo in titulos:
-
+        for oferta in ofertas:
+            print(oferta.text)
             item_detalle = driver.find_element_by_class_name("jolnDe")  # item contenedor
-            titulo.click()
+            oferta.click()
             sleep(random.uniform(0.5, 1))
             # empresa y lugar
             etiquetas = item_detalle.find_elements_by_class_name("sMzDkb")
@@ -125,8 +126,11 @@ class WebScrapingService():
             # url 
             url_oferta = item_detalle.find_element_by_class_name("pMhGee").get_attribute('href')
             # tiempo publicado
-            tiempo_publicado = item_detalle.find_element_by_class_name("SuWscb").text
-
+            try:
+                tiempo_publicado = item_detalle.find_element_by_class_name("SuWscb").text
+            except:
+                pass
+            
             empresa = ""
             lugar = ""
 
@@ -144,64 +148,71 @@ class WebScrapingService():
                 pass
 
             # Cifra para sacar el id anuncio 
+             # se crea un codigo hash de la oferta para validar si existe o no en la db
             id_anuncioempleo = hashlib.md5(str(detalle.text).encode()).hexdigest()
 
-            # Creamos la oferta Modelo
-            ofer = ofertaModelo.Oferta(
-                        id_webscraping,                 # id_webscraping
-                        titulo.text,                    # titulo
-                        empresa,                        # empresa
-                        lugar,                          # lugar
-                        tiempo_publicado,               # tiempo publicado
-                        None,                           # salario
-                        None,                           # modalidad de trabajo
-                        None,                           # subarea
-                        url_oferta,                     # url oferta
-                        url_pagina,                     # url pagina
-                        None,                           # area
-                        datetime.now(),                 # fecha creacion
-                        datetime.now(),                 # fecha modificacion
-                        detalle.text,                   # detalle
-                        None,                           # fecha publicacion
-                        id_anuncioempleo                # id_anuncioempleo
-                    )
-            
-            # print(ofer)
+            if (oferta_service.OfertaService().existe_registro(id_anuncioempleo)):
+                print("El registro con id: " + id_anuncioempleo + " ya existe")
+            else:
+                parrafo = detalle.text.splitlines()
+                modalidad = util.Utils().obtenerModalidad(parrafo, oferta.text)
+                salario = util.Utils().obtenerSalario(parrafo)
+                fecha_publicacion = util.Utils().obtener_fec_pub(tiempo_publicado)
 
-            # recibe como paramaetro 'insert_then_return_latest_row(ofertaModelo.Oferta)'
-            # devuelve el ultimo id_oferta que se inserto
-            # esto me va servir para insertar en oferta detalle
-            # Esto me devuel la pos de la consulta 
-            # Ejemplo 1,2,3 ....... 40 -> si fuera la iteracion 22 me devuelve (22 + row.oferta)
-            id_oferta_insert = self.__of_service.insert_then_return_latest_row(ofer)
-            parrafo = detalle.text.splitlines()
-            # Limpiamos el parrafo
-            self.limpiarParrafo(parrafo, id_oferta_insert)
+                # Creamos la oferta Modelo
+                ofer = ofertaModelo.Oferta(
+                            id_webscraping,                 # id_webscraping
+                            oferta.text,                    # titulo
+                            empresa,                        # empresa
+                            lugar,                          # lugar
+                            tiempo_publicado,               # tiempo publicado
+                            salario,                        # salario
+                            modalidad,                      # modalidad de trabajo
+                            None,                           # subarea
+                            url_oferta,                     # url oferta
+                            url_pagina,                     # url pagina
+                            None,                           # area
+                            datetime.now(),                 # fecha creacion
+                            datetime.now(),                 # fecha modificacion
+                            detalle.text,                   # detalle
+                            fecha_publicacion,              # fecha publicacion
+                            id_anuncioempleo                # id_anuncioempleo
+                        )
+                
+                # print(ofer)
+
+                # recibe como paramaetro 'insert_then_return_latest_row(ofertaModelo.Oferta)'
+                # devuelve el ultimo id_oferta que se inserto
+                # esto me va servir para insertar en oferta detalle
+                # Esto me devuel la pos de la consulta 
+                # Ejemplo 1,2,3 ....... 40 -> si fuera la iteracion 22 me devuelve (22 + row.oferta)
+                id_oferta_insert = self.__of_service.insert_then_return_latest_row(ofer)
+                # Limpiamos el parrafo
+                self.insertarOfertaDetalle(parrafo, id_oferta_insert)
 
     # 2) Limpiamos el parrafo
-    def limpiarParrafo(self, parrafo, id_oferta):
+    def insertarOfertaDetalle(self, parrafo, id_oferta):
         for linea_descripcion in parrafo:
             linea_descripcion = linea_descripcion.strip()
-            if (len(linea_descripcion) > 0):
-                if (not linea_descripcion[0].isalpha()):
-                    linea_descripcion = linea_descripcion[1:]
+
+            if ( (len(linea_descripcion) > 0) and (not linea_descripcion[0].isalpha()) and (not linea_descripcion == "")):
+                linea_descripcion = linea_descripcion[1:]
                 linea_descripcion = linea_descripcion.strip().upper()
                 linea_descripcion = re.sub(r"([^n\u0300-\u036f]|n(?!\u0303(?![\u0300-\u036f])))[\u0300-\u036f]+", r"\1",
                               normalize("NFD", linea_descripcion), 0, re.I)
-                if (not linea_descripcion == ""):
-                    # inserto cada linea en oferta_detalle
-                    self.__of_detalle_service.insert_then_return_latest_row(
-                    oferta_detalle.OfertaDetalle(
-                        id_oferta,                          # id_oferta
-                        linea_descripcion,                  # descripcion
-                        None,                               # descripcion normalizada
-                        None,                               # ind_activo            (entero)
-                        None,                               # modo_inactivo         (entero)
-                        datetime.now(),                     # fecha_creacion        (fecha)
-                        datetime.now(),                     # fecha_modificacion    (fecha)
-                        None                                # ofertaperfil_id       (entero)
-                    ))
+
+                # inserto cada linea en oferta_detalle
+                self.__of_detalle_service.insert_then_return_latest_row(
+                oferta_detalle.OfertaDetalle(
+                    id_oferta,                          # id_oferta
+                    linea_descripcion,                  # descripcion
+                    None,                               # descripcion normalizada
+                    None,                               # ind_activo            (entero)
+                    None,                               # modo_inactivo         (entero)
+                    datetime.now(),                     # fecha_creacion        (fecha)
+                    datetime.now(),                     # fecha_modificacion    (fecha)
+                    None                                # ofertaperfil_id       (entero)
+                ))
 
 web = WebScrapingService()
-# web.scrape(1,1,1)
 web.iterar_scrape()

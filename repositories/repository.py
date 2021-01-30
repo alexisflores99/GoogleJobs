@@ -62,6 +62,28 @@ class Repository():
         database.close()
         return keywords
 
+    # Metodo para ver si existe
+    def existe_registro(self, params, sql_select):
+        result = False
+        try:
+            # conecto a base de datos
+            database = self.__conexion.connect()
+
+            # ejecuto la query
+            cursor = database.cursor()
+
+            # obtengo resultado
+            cursor.execute(sql_select, params)
+            result = cursor.fetchone()
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        database.close()
+        return result
+    
+    
+
     def insert(self, params, sql_insert):
         last_row_id = 0
         try:

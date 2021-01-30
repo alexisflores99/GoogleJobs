@@ -37,3 +37,13 @@ class OfertaDao():
 
         # Pasamos al repositorio (el parametro de sql, sql a insertar,sql del ultimo insertado)
         return self.__repository.insert_then_return_latest_row(params, sql_insert, sql_select_last)
+
+    # Metodo que ve si existe ya el registro en la db
+    def existe_registro(self, id_anuncioempleo):
+        # defino las sentencia sql
+        sql_select = "SELECT EXISTS (SELECT id_anuncioempleo FROM public.oferta WHERE id_anuncioempleo = %s);"
+
+        # obtengo los parametros para la query sql
+        params = (id_anuncioempleo,)
+
+        return self.__repository.existe_registro(params, sql_select)[0]

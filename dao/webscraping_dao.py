@@ -8,8 +8,8 @@ class WebscrapingDao():
 
     def insert_then_return_latest_row(self, webscraping):
         # defino las sentencia sql
-        sql_insert = "INSERT INTO webscraping (busqueda, busqueda_area, pagina_web, url_pagina, url_busqueda,fecha_creacion,fecha_modificacion, id_keyword)" \
-                     "VALUES (%s, %s, %s, %s, %s, current_date, current_date, %s)"
+        sql_insert = "INSERT INTO webscraping (busqueda, busqueda_area, pagina_web, url_pagina, url_busqueda,fecha_creacion,fecha_modificacion, id_keyword, delati_team)" \
+                     "VALUES (%s, %s, %s, %s, %s, current_date, current_date, %s,'Devcito')"
 
         sql_select_last = "SELECT last_value FROM webscraping_id_webscraping_seq"
 
