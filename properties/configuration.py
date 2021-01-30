@@ -1,14 +1,14 @@
 
 # DATABASE
 DATABASE = {
-    # "DB_HOST" : "161.35.60.197",
-    # "DB_SERVICE" : "tcs7",
-    # "DB_USER" : "modulo4",
-    # "DB_PASSWORD" : "modulo4"
-    "DB_HOST" : 'localhost',
-    "DB_SERVICE" : 'googlejobs',
-    "DB_USER" : 'postgres',
-    "DB_PASSWORD" : 'admin'
+    "DB_HOST" : "161.35.60.197",
+    "DB_SERVICE" : "tcs7",
+    "DB_USER" : "modulo4",
+    "DB_PASSWORD" : "modulo4"
+    #"DB_HOST" : 'localhost',
+    #"DB_SERVICE" : 'googlejobs',
+    #"DB_USER" : 'postgres',
+    #"DB_PASSWORD" : 'admin'
 }
 
 #SITIO-COMPUTRABAJO

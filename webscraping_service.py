@@ -67,7 +67,8 @@ class WebScrapingService():
         pagina_web = GOOGLE_JOBS["WS_PORTAL_LABORAL"]               ## google jobs
         numero_paginas = GOOGLE_JOBS["WS_PAGINAS"]                  ## 1
         url_pagina = GOOGLE_JOBS["WS_PORTAL_LABORAL_URL"]           ## https://google.com
-
+        ##remplazo el caracter numeral en la palabra de busqueda c#
+        cadena_busqueda = cadena_busqueda.replace('#', '%23', 1)
         ## incrusto mi keyword search en la url
         url_busqueda = "/search?q="+cadena_busqueda+"&ibp=htl;jobs#htivrt=jobs"
         url_busqueda = url_pagina + url_busqueda
@@ -130,7 +131,7 @@ class WebScrapingService():
                 tiempo_publicado = item_detalle.find_element_by_class_name("SuWscb").text
             except:
                 pass
-            
+
             empresa = ""
             lugar = ""
 
